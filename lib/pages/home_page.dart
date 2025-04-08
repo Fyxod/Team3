@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:bbapp/pages/notifications_page.dart';
-import 'package:bbapp/main.dart';
+import 'package:bbapp/pages/login_page.dart';
 import 'package:bbapp/pages/profile_page.dart';
+import 'package:bbapp/services/auth_service.dart'; // <-- added
 
 class HomePage extends StatefulWidget {
-  final String username; 
+  final String username;
 
-  const HomePage({super.key, required this.username}); 
+  const HomePage({super.key, required this.username});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -27,233 +28,241 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+      backgroundColor: const Color(0xFF121212),
       endDrawer: Drawer(
-  child: ListView(
-    padding: EdgeInsets.zero,
-    children: [
-      const DrawerHeader(
-        decoration: BoxDecoration(color: Colors.greenAccent),
-        child: Text(
-          'Menu',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+        backgroundColor: const Color(0xFF1E1E1E),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Color(0xFF2C2C2C)),
+              child: Text(
+                'Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            _buildDrawerTile(Icons.home, 'Home', () {
+              Navigator.pop(context);
+            }),
+            _buildDrawerTile(Icons.person, 'Profile', () {
+              Navigator.pop(context);
+              _showPinDialog();
+            }),
+            _buildDrawerTile(Icons.flag, 'Milestones', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Milestones()));
+            }),
+            _buildDrawerTile(Icons.contact_mail, 'Contact Us', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ContactUs()));
+            }),
+            const Divider(color: Colors.grey),
+            _buildDrawerTile(Icons.logout, 'Logout', () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    backgroundColor: const Color(0xFF1E1E1E),
+                    title: const Text('Confirm Logout', style: TextStyle(color: Colors.white)),
+                    content: const Text('Are you sure you want to logout?', style: TextStyle(color: Colors.white70)),
+                    actions: [
+                      TextButton(
+                        style: TextButton.styleFrom(foregroundColor: Colors.white),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginPage()),
+                            (route) => false,
+                          );
+                        },
+                        child: const Text('Logout'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }),
+          ],
         ),
       ),
-      ListTile(
-        leading: const Icon(Icons.home),
-        title: const Text('Home'),
-        onTap: () {
-          Navigator.pop(context);
-        },
-      ),
-      ListTile(
-        leading: const Icon(Icons.person),
-        title: const Text('Profile'),
-        onTap: () {
-          Navigator.pop(context);
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              final TextEditingController pinController =
-                  TextEditingController();
-              return AlertDialog(
-                title: const Text('Enter PIN'),
-                content: TextField(
-                  controller: pinController,
-                  keyboardType: TextInputType.number,
-                  obscureText: true,
-                  maxLength: 4,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter 4-digit PIN',
-                    counterText: '',
-                  ),
-                ),
-                actions: [
-                  TextButton(
+      body: Center(
+        child: ListView(
+          children: [
+            Container(
+              height: 50,
+              margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              child: Row(
+                children: [
+                  SiteLogo(onTap: () {}),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.notifications, color: Colors.white),
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const NotificationsPage()),
+                      );
                     },
-                    child: const Text('Cancel'),
                   ),
-                  ElevatedButton(
+                  IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.white),
                     onPressed: () {
-                      if (pinController.text == '2324') { // Change the PIN here
-                        Navigator.of(context).pop();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ProfilePage()),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Incorrect PIN'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
+                      _scaffoldKey.currentState?.openEndDrawer();
                     },
-                    child: const Text('Submit'),
                   ),
                 ],
-              );
-            },
-          );
-        },
-      ),
-      ListTile(
-        leading: const Icon(Icons.flag),
-        title: const Text('Milestones'),
-        onTap: () {
-          Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const Milestones()),
-          );
-        },
-      ),
-      ListTile(
-        leading: const Icon(Icons.contact_mail),
-        title: const Text('Contact Us'),
-        onTap: () {
-          Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ContactUs()),
-          );
-        },
-      ),
-      const Divider(),
-      ListTile(
-        leading: const Icon(Icons.logout),
-        title: const Text('Logout'),
-        onTap: () {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Confirm Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.black, // <-- Black text
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.black, // <-- Black text
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.pop(context); // Close drawer
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-                (route) => false,
-              );
-            },
-            child: const Text('Logout'),
-          ),
-        ],
-      );
-    },
-  );
-},
-
-      ),
-    ],
-  ),
-),
-
-
-      body: Center(
-        child: SizedBox(
-          child: ListView(
-            children: [
-              Container(
-                height: 50,
-                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                child: Row(
-                  children: [
-                    SiteLogo(onTap: () {}),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const NotificationsPage()),
-                        );
-                      },
-                      icon: const Icon(Icons.notifications),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        _scaffoldKey.currentState?.openEndDrawer();
-                      },
-                      icon: const Icon(Icons.menu),
-                    ),
-                  ],
-                ),
               ),
-              Container(
-                height: 150,
-                width: double.maxFinite,
-                color: Colors.grey,
-                child: Center(
-                  child: Text(
-                    "Welcome, ${widget.username}!", 
-                    style: GoogleFonts.oswald(fontSize: 24),
+            ),
+            Container(
+              height: 150,
+              width: double.infinity,
+              color: const Color(0xFF2C2C2C),
+              child: Center(
+                child: Text(
+                  "Welcome, ${widget.username}!",
+                  style: GoogleFonts.oswald(
+                    fontSize: 24,
+                    color: Colors.white,
                   ),
                 ),
               ),
-              // Calendar
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                child: TableCalendar(
-                  firstDay: DateTime.utc(2020, 1, 1),
-                  lastDay: DateTime.utc(2030, 12, 31),
-                  focusedDay: _focusedDay,
-                  selectedDayPredicate: (day) {
-                    return isSameDay(_selectedDay ?? DateTime.now(), day);
-                  },
-                  onDaySelected: (selectedDay, focusedDay) {
-                    setState(() {
-                      _selectedDay = selectedDay;
-                      _focusedDay = focusedDay;
-                    });
-                  },
-                  calendarFormat: CalendarFormat.month,
-                  availableCalendarFormats: const {
-                    CalendarFormat.month: 'Month',
-                  },
-                  onFormatChanged: (_) {},
-                  calendarStyle: const CalendarStyle(
-                    todayDecoration: BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                    ),
-                    selectedDecoration: BoxDecoration(
-                      color: Colors.greenAccent,
-                      shape: BoxShape.circle,
-                    ),
+            ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+              child: TableCalendar(
+                firstDay: DateTime.utc(2020, 1, 1),
+                lastDay: DateTime.utc(2030, 12, 31),
+                focusedDay: _focusedDay,
+                selectedDayPredicate: (day) => isSameDay(_selectedDay ?? DateTime.now(), day),
+                onDaySelected: (selectedDay, focusedDay) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                  });
+                },
+                calendarFormat: CalendarFormat.month,
+                availableCalendarFormats: const {
+                  CalendarFormat.month: 'Month',
+                },
+                calendarStyle: const CalendarStyle(
+                  todayDecoration: BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
                   ),
+                  selectedDecoration: BoxDecoration(
+                    color: Colors.greenAccent,
+                    shape: BoxShape.circle,
+                  ),
+                  weekendTextStyle: TextStyle(color: Colors.redAccent),
+                  outsideTextStyle: TextStyle(color: Colors.grey),
+                  defaultTextStyle: TextStyle(color: Colors.white),
+                ),
+                daysOfWeekStyle: const DaysOfWeekStyle(
+                  weekdayStyle: TextStyle(color: Colors.white70),
+                  weekendStyle: TextStyle(color: Colors.redAccent),
+                ),
+                headerStyle: const HeaderStyle(
+                  titleTextStyle: TextStyle(color: Colors.white, fontSize: 16),
+                  formatButtonTextStyle: TextStyle(color: Colors.white),
+                  formatButtonDecoration: BoxDecoration(
+                    color: Colors.greenAccent,
+                    borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                  ),
+                  leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
+                  rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
                 ),
               ),
-              Container(
-                height: 600,
-                width: double.maxFinite,
-                color: Colors.green,
-              ),
-            ],
-          ),
+            ),
+            Container(
+              height: 600,
+              width: double.infinity,
+              color: const Color(0xFF1E1E1E),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  void _showPinDialog() {
+    final TextEditingController pinController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: const Text('Enter PIN', style: TextStyle(color: Colors.white)),
+          content: TextField(
+            controller: pinController,
+            keyboardType: TextInputType.number,
+            obscureText: true,
+            maxLength: 4,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: 'Enter 4-digit PIN',
+              hintStyle: TextStyle(color: Colors.grey),
+              counterText: '',
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.greenAccent),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final pin = pinController.text.trim();
+                final result = await AuthService.verifyPin(widget.username, pin);
+
+                if (result) {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                     context,
+                     MaterialPageRoute(builder: (context) => ProfilePage(username: widget.username)),
+                  );
+
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Incorrect PIN'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.greenAccent,
+                foregroundColor: Colors.black,
+              ),
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDrawerTile(IconData icon, String title, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.white),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      onTap: onTap,
     );
   }
 }
