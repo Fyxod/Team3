@@ -2,11 +2,32 @@ import 'package:flutter/material.dart';
 
 class Milestones extends StatelessWidget {
   final List<_Badge> badges = [
-    _Badge(label: '1 Day No Spend', earned: true),
-    _Badge(label: '5 Days No Spend', earned: true),
-    _Badge(label: '10 Days Minimal Spend', earned: false),
-    _Badge(label: '14 Days In-Budget', earned: false),
-    _Badge(label: 'Best Saver - 1 Month', earned: false, isFinal: true),
+    _Badge(
+      label: '1 Day No Spend',
+      earned: true,
+      description: 'One full day without spending any money.',
+    ),
+    _Badge(
+      label: '5 Days No Spend',
+      earned: true,
+      description: 'Five days straight without spending.',
+    ),
+    _Badge(
+      label: '10 Days Minimal Spend',
+      earned: false,
+      description: 'Spend only on essentials for 10 days to earn this badge.',
+    ),
+    _Badge(
+      label: 'Two weeks in-Budget',
+      earned: false,
+      description: 'Stay within your set budget for two full weeks.',
+    ),
+    _Badge(
+      label: 'Best Saver - 1 Month',
+      earned: false,
+      isFinal: true,
+      description: 'Your best month of saving. Complete 30 days of minimal spending.',
+    ),
   ];
 
   Milestones({super.key});
@@ -49,8 +70,14 @@ class _Badge {
   final String label;
   final bool earned;
   final bool isFinal;
+  final String description;
 
-  _Badge({required this.label, required this.earned, this.isFinal = false});
+  _Badge({
+    required this.label,
+    required this.earned,
+    this.isFinal = false,
+    required this.description,
+  });
 }
 
 class _BadgeWidget extends StatelessWidget {
@@ -58,47 +85,108 @@ class _BadgeWidget extends StatelessWidget {
 
   const _BadgeWidget({required this.badge});
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: badge.earned ? Colors.amber : Colors.grey[800],
-            border: Border.all(color: Colors.white12),
-          ),
-          child: Icon(
-            badge.isFinal ? Icons.attach_money : Icons.shield,
-            color: badge.earned ? Colors.black : Colors.white30,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
+  void _showBadgeDetails(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(
           badge.label,
-          style: TextStyle(
-            fontSize: 12,
-            color: badge.earned ? Colors.white : Colors.white38,
-          ),
+          style: const TextStyle(color: Colors.white),
         ),
-        if (badge.isFinal && badge.earned)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // Logic to share badge to Instagram
-              },
-              icon: const Icon(Icons.share, color: Colors.white),
-              label: const Text('Share to Instagram'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2DA7B3),
-                foregroundColor: Colors.white,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              badge.description,
+              style: TextStyle(
+                color: badge.earned ? Colors.white70 : Colors.white38,
+                fontSize: 14,
               ),
             ),
+            const SizedBox(height: 12),
+            Text(
+              badge.earned
+                  ? 'You have earned this badge.'
+                  : 'You haven’t earned this badge yet.',
+              style: TextStyle(
+                color: badge.earned ? Colors.greenAccent : Colors.orangeAccent,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close', style: TextStyle(color: Colors.tealAccent)),
           ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showBadgeDetails(context),
+      child: Column(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: badge.earned ? Colors.amber : Colors.grey[800],
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Icon(
+              badge.isFinal ? Icons.attach_money : Icons.shield,
+              color: badge.earned ? Colors.black : Colors.white30,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            badge.label,
+            style: TextStyle(
+              fontSize: 12,
+              color: badge.earned ? Colors.white : Colors.white38,
+            ),
+          ),
+          if (badge.earned)
+            const Padding(
+              padding: EdgeInsets.only(top: 4),
+              child: Text(
+                'Earned! 🎉',
+                style: TextStyle(color: Colors.greenAccent, fontSize: 11),
+              ),
+            )
+          else
+            const Padding(
+              padding: EdgeInsets.only(top: 4),
+              child: Text(
+                'Keep going...',
+                style: TextStyle(color: Colors.white30, fontSize: 11),
+              ),
+            ),
+          if (badge.isFinal && badge.earned)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: ElevatedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.share, color: Colors.white),
+                label: const Text('Share to Instagram'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2DA7B3),
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

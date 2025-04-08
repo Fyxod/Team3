@@ -1,13 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = 3000;
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 mongoose.connect('mongodb://localhost:27017/flutter_auth')
   .then(() => console.log('Connected to MongoDB'))
@@ -18,6 +17,10 @@ const User = mongoose.model('User', {
   password: String,
   pin: String, 
 });
+
+app.get('/', (req, res) => {
+  res.send('Hello')
+})
 
 app.post('/api/auth/register', async (req, res) => {
   const { username, password, pin } = req.body;
@@ -44,7 +47,8 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const user = await User.findOne({ username, password });
     if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      res.status(401).send("invalid")
+      return
     }
 
     res.json({ message: 'Login successful' });

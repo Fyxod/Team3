@@ -7,7 +7,21 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:bbapp/pages/notifications_page.dart';
 import 'package:bbapp/pages/login_page.dart';
 import 'package:bbapp/pages/profile_page.dart';
-import 'package:bbapp/services/auth_service.dart'; // <-- added
+import 'package:bbapp/services/auth_service.dart'; 
+
+class Badge {
+  final String label;
+  final bool earned;
+  final bool isFinal;
+  final String description;
+
+  Badge({
+    required this.label,
+    required this.earned,
+    this.isFinal = false,
+    required this.description,
+  });
+}
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -23,6 +37,16 @@ class _HomePageState extends State<HomePage> {
   DateTime? _selectedDay;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final List<Badge> allBadges = [
+    Badge(label: '1 Day No Spend', earned: true, description: 'You went one full day without spending.'),
+    Badge(label: '5 Days No Spend', earned: true, description: 'Five days straight without spending.'),
+    Badge(label: '10 Days Minimal Spend', earned: false, description: 'Only essential spending for 10 days.'),
+    Badge(label: '14 Days In-Budget', earned: false, description: 'Stayed within your budget for 2 weeks.'),
+    Badge(label: 'Best Saver - 1 Month', earned: false, isFinal: true, description: 'The ultimate savings streak!'),
+  ];
+
+  List<Badge> get earnedBadges => allBadges.where((badge) => badge.earned).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -155,11 +179,11 @@ class _HomePageState extends State<HomePage> {
                 },
                 calendarStyle: const CalendarStyle(
                   todayDecoration: BoxDecoration(
-                    color: Colors.green,
+                    color: Colors.greenAccent,
                     shape: BoxShape.circle,
                   ),
                   selectedDecoration: BoxDecoration(
-                    color: Colors.greenAccent,
+                    color: Colors.green,
                     shape: BoxShape.circle,
                   ),
                   weekendTextStyle: TextStyle(color: Colors.redAccent),
@@ -183,12 +207,66 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             Container(
-              height: 600,
-              width: double.infinity,
-              color: const Color(0xFF1E1E1E),
-            ),
+  padding: const EdgeInsets.all(16),
+  color: const Color(0xFF1E1E1E),
+  width: double.infinity,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      const Text(
+        'Your Earned Badges',
+        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 12),
+      ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Milestones()),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.greenAccent,
+          foregroundColor: Colors.black,
+        ),
+        child: const Text('Tap to see your badges'),
+      ),
+    ],
+  ),
+),
+
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBadgeIcon(Badge badge) {
+    return SizedBox(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.amber,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white24),
+            ),
+            child: Icon(
+              badge.isFinal ? Icons.attach_money : Icons.shield,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            badge.label,
+            style: const TextStyle(color: Colors.white70, fontSize: 10),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -236,7 +314,6 @@ class _HomePageState extends State<HomePage> {
                      context,
                      MaterialPageRoute(builder: (context) => ProfilePage(username: widget.username)),
                   );
-
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
